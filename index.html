@@ -414,10 +414,23 @@ function buscarArray(data,nombres,firmas,excluir){
   return{campo:null,datos:[]};
 }
 function detectarDatos(data){
-  const inv=buscarArray(data,[CONFIG.campoInv],["stk","tal"]);
+  const inv=buscarArray(data,[CONFIG.campoInv,"inv","inventario","stock","productos"],["stk","tal"]);
   const invKey=inv.campo?inv.campo.replace(" (detectado)",""):null;
-  const log=buscarArray(data,[CONFIG.campoLog],["tipo","movimiento","tipomovimiento","fecha","fechahora","cantidad","cant"],invKey);
+  const log=buscarArray(data,
+    [CONFIG.campoLog,"log","salidas","bitacora","bitácora","movimientos","historial","ventas","actividad","registros"],
+    ["tipo","movimiento","tipomovimiento","fecha","fechahora","fechasalida","hora","date","f","timestamp","cantidad","cant","unidades"],
+    invKey);
   return{inv,log};
+}
+/* si la fuente es de salidas/ventas y la entrada no trae tipo, se etiqueta como venta */
+function etiquetarLog(arr,campo){
+  const f=(campo||"").toLowerCase();
+  const tipoFuente = f.includes("salida")||f.includes("venta") ? "venta"
+    : f.includes("ingreso") ? "ingreso"
+    : f.includes("correc") ? "corrección"
+    : f.includes("devol") ? "devolución" : "";
+  if(!tipoFuente) return arr;
+  return arr.map(e=>(e&&typeof e==="object"&&!logTipo(e))?Object.assign({_tipo:tipoFuente},e):e);
 }
 
 /* fecha robusta: ISO, epoch, Timestamp Firestore, dd/mm/aaaa hh:mm */
