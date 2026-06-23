@@ -393,6 +393,32 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;",
 function has(x){return x!=null && String(x).trim()!=="";}
 function num(x){const n=Number(x);return isNaN(n)?0:n;}
 function pf(o,...ks){if(!o)return"";for(const k of ks){if(o[k]!=null&&String(o[k]).trim()!=="")return o[k];}return"";}
+/* acepta un array directo, o un texto JSON que contenga un array */
+function asArray(v){
+  if(Array.isArray(v)) return v;
+  if(typeof v==="string"){try{const p=JSON.parse(v);return Array.isArray(p)?p:[];}catch(e){return[];}}
+  if(v&&typeof v==="object") return Object.values(v);
+  return[];
+}
+/* busca un array dentro del documento: 1) por nombre, 2) por firma de campos */
+function buscarArray(data,nombres,firmas,excluir){
+  for(const k of nombres){const a=asArray(data[k]); if(a.length) return{campo:k,datos:a};}
+  for(const k of Object.keys(data)){
+    if(excluir&&k===excluir) continue;
+    const a=asArray(data[k]);
+    if(a.length&&a[0]&&typeof a[0]==="object"){
+      const ks=Object.keys(a[0]).map(x=>x.toLowerCase());
+      if(firmas.some(f=>ks.includes(f))) return{campo:k+" (detectado)",datos:a};
+    }
+  }
+  return{campo:null,datos:[]};
+}
+function detectarDatos(data){
+  const inv=buscarArray(data,[CONFIG.campoInv],["stk","tal"]);
+  const invKey=inv.campo?inv.campo.replace(" (detectado)",""):null;
+  const log=buscarArray(data,[CONFIG.campoLog],["tipo","movimiento","tipomovimiento","fecha","fechahora","cantidad","cant"],invKey);
+  return{inv,log};
+}
 
 /* fecha robusta: ISO, epoch, Timestamp Firestore, dd/mm/aaaa hh:mm */
 function parseFecha(v){
@@ -615,9 +641,17 @@ function renderVentas(){
   }
 
   // diagnóstico de nombres de campo
-  const diag={inv_ejemplo:INV[0]?Object.keys(INV[0]):[],
-              log_ejemplo:LOG[0]?Object.keys(LOG[0]):[],
-              log_primer_registro:LOG[0]||null};
+  const raw=window._RAW||{existe:"(aún sin lectura)",claves:[],data:{}};
+  const diag={
+    documento_existe:raw.existe,
+    campos_en_documento:raw.claves,
+    inventario_detectado_en:raw.inv_campo||"(no encontrado)",
+    bitacora_detectada_en:raw.log_campo||"(no encontrada)",
+    inv_leido:INV.length+" elementos",
+    log_leido:LOG.length+" elementos",
+    inv_primer_registro:INV[0]?Object.keys(INV[0]):[],
+    log_primer_registro:LOG[0]?Object.keys(LOG[0]):[]
+  };
   document.getElementById("diagPre").textContent=JSON.stringify(diag,null,2);
 }
 
@@ -658,8 +692,10 @@ function initFirebase(){
     setLive("","Conectando…");
     db.collection(CONFIG.coleccion).doc(CONFIG.documento).onSnapshot(snap=>{
       const data=snap.data()||{};
-      INV=Array.isArray(data[CONFIG.campoInv])?data[CONFIG.campoInv]:[];
-      LOG=Array.isArray(data[CONFIG.campoLog])?data[CONFIG.campoLog]:[];
+      const det=detectarDatos(data);
+      INV=det.inv.datos; LOG=det.log.datos;
+      window._RAW={existe:snap.exists,claves:Object.keys(data),data:data,
+                   inv_campo:det.inv.campo,log_campo:det.log.campo};
       setLive("on","En vivo · "+new Date().toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"}));
       renderAll();
     },err=>{
