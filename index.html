@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel · Variedades Jared</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0f1f; --bg-2:#0c1227; --surface:#121a33; --surface-2:#172245;
+  --border:rgba(255,255,255,.08); --border-2:rgba(255,255,255,.14);
+  --text:#e9edf7; --muted:#94a1c2; --faint:#6b7aa0;
+  --accent:#2dd4bf; --accent-soft:rgba(45,212,191,.14);
+  --indigo:#818cf8; --indigo-soft:rgba(129,140,248,.16);
+  --warn:#f59e0b; --warn-soft:rgba(245,158,11,.15);
+  --danger:#f87171; --danger-soft:rgba(248,113,113,.15);
+  --good:#34d399; --good-soft:rgba(52,211,153,.15);
+  --shadow:0 10px 30px -12px rgba(0,0,0,.6);
+  --radius:14px;
+}
+body.light{
+  --bg:#eef1f8; --bg-2:#e7ebf5; --surface:#ffffff; --surface-2:#f4f6fc;
+  --border:#e2e7f2; --border-2:#d4dbeb;
+  --text:#16203a; --muted:#5b6788; --faint:#8a96b4;
+  --accent:#0d9488; --accent-soft:rgba(13,148,136,.12);
+  --indigo:#6366f1; --indigo-soft:rgba(99,102,241,.12);
+  --warn:#d97706; --warn-soft:rgba(217,119,6,.13);
+  --danger:#dc2626; --danger-soft:rgba(220,38,38,.12);
+  --good:#16a34a; --good-soft:rgba(22,163,74,.12);
+  --shadow:0 12px 28px -16px rgba(20,32,58,.28);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:radial-gradient(1200px 600px at 80% -10%, var(--bg-2), var(--bg)) fixed;
+  color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased;
+  font-size:15px; line-height:1.5;
+}
+h1,h2,h3,.num{font-family:"Sora","Inter",sans-serif}
+button{font-family:inherit;cursor:pointer}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ---------- LOGIN ---------- */
+#login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(900px 500px at 50% -20%, var(--bg-2), var(--bg));z-index:50}
+.login-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);
+  border-radius:18px;padding:34px 30px;box-shadow:var(--shadow)}
+.brandmark{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.logo{width:42px;height:42px;flex:0 0 auto;display:grid;place-items:center;border-radius:11px;
+  background:linear-gradient(135deg,var(--accent),var(--indigo))}
+.logo svg{width:24px;height:24px;color:#06121f}
+body.light .logo svg{color:#fff}
+.brand-name{font-family:"Sora";font-weight:800;font-size:18px;letter-spacing:.2px;line-height:1.1}
+.brand-sub{font-size:11.5px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
+.login-card label{display:block;font-size:12.5px;color:var(--muted);margin:18px 0 7px;font-weight:600}
+.login-card input{width:100%;padding:12px 14px;border-radius:11px;border:1px solid var(--border-2);
+  background:var(--surface-2);color:var(--text);font-size:15px;outline:none}
+.login-card input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.btn-primary{width:100%;margin-top:18px;padding:12px;border:none;border-radius:11px;font-weight:700;
+  font-size:15px;color:#06121f;background:linear-gradient(135deg,var(--accent),var(--indigo))}
+body.light .btn-primary{color:#fff}
+.btn-primary:hover{filter:brightness(1.06)}
+.login-err{color:var(--danger);font-size:13px;margin-top:12px;min-height:18px;font-weight:600}
+.login-note{margin-top:18px;font-size:11.5px;color:var(--faint);text-align:center;line-height:1.5}
+
+/* ---------- APP SHELL ---------- */
+#app[hidden]{display:none}
+header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:14px 22px;background:color-mix(in srgb,var(--bg) 80%,transparent);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.top .brandmark{margin:0;flex:1 1 auto;min-width:200px}
+.live{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--muted);
+  padding:6px 11px;border:1px solid var(--border);border-radius:999px;background:var(--surface)}
+.live .dot{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.live.on .dot{background:var(--good);box-shadow:0 0 0 0 var(--good-soft);animation:pulse 2s infinite}
+.live.err .dot{background:var(--danger)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.5)}70%{box-shadow:0 0 0 8px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+.icon-btn{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:var(--surface);
+  border:1px solid var(--border);color:var(--text)}
+.icon-btn:hover{border-color:var(--border-2)}
+.icon-btn svg{width:18px;height:18px}
+
+nav.tabs{display:flex;gap:6px;padding:12px 18px 0;overflow-x:auto;max-width:1280px;margin:0 auto}
+nav.tabs button{white-space:nowrap;border:none;background:transparent;color:var(--muted);font-weight:600;
+  font-size:14px;padding:10px 16px;border-radius:10px 10px 0 0;border-bottom:2px solid transparent}
+nav.tabs button:hover{color:var(--text)}
+nav.tabs button.active{color:var(--text);border-bottom-color:var(--accent);background:var(--surface)}
+
+main{max-width:1280px;margin:0 auto;padding:18px}
+.tab[hidden]{display:none}
+section.tab{animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ---------- CARDS / KPIs ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px}
+.kpi{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 18px 16px;overflow:hidden}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+.kpi.warn::before{background:var(--warn)} .kpi.danger::before{background:var(--danger)}
+.kpi.indigo::before{background:var(--indigo)}
+.kpi .lbl{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.kpi .val{font-family:"Sora";font-weight:800;font-size:30px;margin-top:8px;line-height:1}
+.kpi .hint{font-size:12px;color:var(--faint);margin-top:6px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;margin-bottom:18px}
+.card h2{margin:0 0 4px;font-size:16px;font-weight:700}
+.card .csub{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:860px){.grid-2{grid-template-columns:1fr}}
+
+/* ---------- FILTERS ---------- */
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:16px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11.5px;color:var(--muted);font-weight:600}
+.field select,.field input{padding:9px 11px;border-radius:10px;border:1px solid var(--border-2);
+  background:var(--surface-2);color:var(--text);font-size:13.5px;outline:none;min-width:130px}
+.field input.search{min-width:200px}
+.field select:focus,.field input:focus{border-color:var(--accent)}
+.chips-row{display:flex;gap:8px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border-2);border-radius:10px;padding:3px}
+.seg button{border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:600;
+  padding:7px 13px;border-radius:8px}
+.seg button.active{background:var(--accent);color:#06121f}
+body.light .seg button.active{color:#fff}
+.btn-ghost{padding:9px 13px;border-radius:10px;border:1px solid var(--border-2);background:transparent;
+  color:var(--muted);font-size:13px;font-weight:600}
+.btn-ghost:hover{color:var(--text);border-color:var(--accent)}
+
+/* ---------- TABLE ---------- */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+thead th{position:sticky;top:0;background:var(--surface-2);text-align:left;font-weight:700;color:var(--muted);
+  font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;padding:11px 14px;border-bottom:1px solid var(--border)}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--surface-2)}
+td.r,th.r{text-align:right}
+td.c,th.c{text-align:center}
+.empty{padding:40px 16px;text-align:center;color:var(--faint);font-size:14px}
+
+/* product descriptor cell */
+.prod .p1{font-weight:700;color:var(--text)}
+.prod .p2{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:999px;
+  background:var(--surface-2);border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.tag b{color:var(--text);font-weight:600}
+
+/* size pills */
+.sizes{display:flex;flex-wrap:wrap;gap:6px}
+.size{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px;border-radius:8px;
+  background:var(--good-soft);border:1px solid transparent;font-weight:600;color:var(--text)}
+.size.low{background:var(--warn-soft)} .size.zero{background:var(--danger-soft);opacity:.85}
+.size .q{font-variant-numeric:tabular-nums}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 10px;
+  border-radius:999px;text-transform:capitalize}
+.badge.venta{background:var(--accent-soft);color:var(--accent)}
+.badge.ingreso{background:var(--good-soft);color:var(--good)}
+.badge.correccion{background:var(--warn-soft);color:var(--warn)}
+.badge.devolucion{background:var(--indigo-soft);color:var(--indigo)}
+.badge.otro{background:var(--surface-2);color:var(--muted)}
+.estado{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+.estado.ok{background:var(--good-soft);color:var(--good)}
+.estado.low{background:var(--warn-soft);color:var(--warn)}
+.estado.zero{background:var(--danger-soft);color:var(--danger)}
+
+/* rank */
+.rank{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;font-weight:800;
+  font-size:13px;background:var(--surface-2);color:var(--muted)}
+.rank.top{background:linear-gradient(135deg,var(--accent),var(--indigo));color:#06121f}
+body.light .rank.top{color:#fff}
+
+.count-note{font-size:12.5px;color:var(--muted);margin:0 0 12px}
+details.diag{margin-top:8px;font-size:12.5px;color:var(--muted)}
+details.diag summary{cursor:pointer;color:var(--faint)}
+details.diag pre{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;
+  overflow:auto;font-size:11.5px;color:var(--text)}
+details.fold{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.fold>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;
+  padding:13px 15px;background:var(--surface-2);font-weight:600;font-size:13.5px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary .dotw{width:9px;height:9px;border-radius:50%;background:var(--danger);flex:0 0 auto}
+details.fold>summary .cnt{flex:1 1 auto}
+details.fold>summary .chev{transition:transform .2s;color:var(--muted);display:grid;place-items:center}
+details.fold[open]>summary .chev{transform:rotate(90deg)}
+details.fold .table-wrap{border:none;border-radius:0}
+.summary-chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.schip{background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:10px 14px;min-width:120px}
+.schip .l{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.schip .v{font-family:"Sora";font-weight:700;font-size:20px;margin-top:3px}
+footer{max-width:1280px;margin:0 auto;padding:8px 18px 28px;color:var(--faint);font-size:11.5px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login">
+  <div class="login-card">
+    <div class="brandmark">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 6l2 3 2-1v10h8V8l2 1 2-3-4-3-2 2a2.5 2.5 0 0 1-4 0Z"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Variedades Jared</div>
+        <div class="brand-sub">Panel administrativo</div>
+      </div>
+    </div>
+    <label for="pw">Contraseña de acceso</label>
+    <input id="pw" type="password" placeholder="••••••••" autocomplete="current-password">
+    <button class="btn-primary" id="loginBtn">Entrar</button>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-note">Acceso de solo lectura. Sin edición de datos.</div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" hidden>
+  <header class="top">
+    <div class="brandmark">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 6l2 3 2-1v10h8V8l2 1 2-3-4-3-2 2a2.5 2.5 0 0 1-4 0Z"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Variedades Jared</div>
+        <div class="brand-sub">Panel · Solo lectura</div>
+      </div>
+    </div>
+    <div class="live" id="liveBadge"><span class="dot"></span><span id="liveText">Conectando…</span></div>
+    <button class="icon-btn" id="themeBtn" title="Cambiar tema">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>
+    </button>
+    <button class="icon-btn" id="logoutBtn" title="Cerrar sesión">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </button>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="resumen" class="active">Resumen</button>
+    <button data-tab="stock">Reporte de stock</button>
+    <button data-tab="ventas">Reporte de ventas</button>
+    <button data-tab="alertas">Top y alertas</button>
+  </nav>
+
+  <main>
+    <!-- RESUMEN -->
+    <section class="tab" id="tab-resumen">
+      <div class="kpis" id="kpis"></div>
+      <div class="grid-2">
+        <div class="card">
+          <h2>Movimientos recientes</h2>
+          <p class="csub">Últimos registros de la bitácora</p>
+          <div id="recientes"></div>
+        </div>
+        <div class="card">
+          <h2>Alerta de productos agotados</h2>
+          <p class="csub">Modelos que se quedaron en 0 unidades</p>
+          <div id="atencion"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STOCK -->
+    <section class="tab" id="tab-stock" hidden>
+      <div class="card">
+        <h2>Reporte de stock</h2>
+        <p class="csub">Inventario agrupado por modelo con sus tallas y cantidades</p>
+        <div class="filters">
+          <div class="field"><label>Buscar</label><input class="search" id="fBuscar" placeholder="equipo, dorsal, color…"></div>
+          <div class="field"><label>Categoría</label><select id="fCategoria"></select></div>
+          <div class="field"><label>Equipo</label><select id="fEquipo"></select></div>
+          <div class="field"><label>Año</label><select id="fAnio"></select></div>
+          <div class="field"><label>Estado</label>
+            <select id="fEstado">
+              <option value="">Todos</option>
+              <option value="ok">Disponible</option>
+              <option value="low">Stock bajo</option>
+              <option value="zero">Agotado</option>
+            </select>
+          </div>
+          <button class="btn-ghost" id="fLimpiar">Limpiar</button>
+        </div>
+        <p class="count-note" id="stockCount"></p>
+        <div class="table-wrap">
+          <table id="stockTable">
+            <thead><tr><th>Producto</th><th>Tallas / Stock</th><th class="r">Total</th><th class="c">Estado</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VENTAS -->
+    <section class="tab" id="tab-ventas" hidden>
+      <div class="card">
+        <h2>Reporte de ventas y movimientos</h2>
+        <p class="csub">Bitácora filtrable por fecha, equipo y tipo de movimiento</p>
+        <div class="filters">
+          <div class="field"><label>Periodo</label>
+            <div class="seg" id="vPeriodo">
+              <button data-p="hoy">Hoy</button>
+              <button data-p="semana">Semana</button>
+              <button data-p="mes" class="active">Mes</button>
+              <button data-p="todo">Todo</button>
+              <button data-p="rango">Rango</button>
+            </div>
+          </div>
+          <div class="field" id="vDesdeWrap" hidden><label>Desde</label><input type="date" id="vDesde"></div>
+          <div class="field" id="vHastaWrap" hidden><label>Hasta</label><input type="date" id="vHasta"></div>
+          <div class="field"><label>Equipo</label><select id="vEquipo"></select></div>
+          <div class="field"><label>Tipo</label><select id="vTipo"></select></div>
+        </div>
+        <div class="summary-chips" id="vSummary"></div>
+        <div class="table-wrap">
+          <table id="ventasTable">
+            <thead><tr><th>Fecha / Hora</th><th class="c">Tipo</th><th>Producto</th><th class="c">Talla</th><th class="r">Cant.</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <details class="diag" id="diagBox">
+          <summary>Diagnóstico de campos (para ajustar nombres)</summary>
+          <pre id="diagPre"></pre>
+        </details>
+      </div>
+    </section>
+
+    <!-- ALERTAS -->
+    <section class="tab" id="tab-alertas" hidden>
+      <div class="card">
+        <h2>Productos más vendidos</h2>
+        <p class="csub">Unidades vendidas acumuladas por modelo</p>
+        <div class="filters">
+          <div class="field"><label>Periodo</label>
+            <div class="seg" id="tPeriodo">
+              <button data-p="semana">Semana</button>
+              <button data-p="mes">Mes</button>
+              <button data-p="todo" class="active">Todo</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="topTable">
+            <thead><tr><th class="c">#</th><th>Producto</th><th class="r">Vendidas</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Alerta de productos agotados</h2>
+        <p class="csub">Modelos que se quedaron en 0 unidades</p>
+        <div id="agotadoBox"></div>
+      </div>
+    </section>
+  </main>
+  <footer>Variedades Jared · Panel de visualización en tiempo real · Los datos no se modifican desde aquí.</footer>
+</div>
+
+<!-- Firebase (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ===================================================================
+   CONFIGURACIÓN  —  cambia la contraseña aquí
+   =================================================================== */
+const CONFIG = {
+  PASSWORD: "jared2025",                 // <<< CAMBIA ESTA CONTRASEÑA
+  firebase: {
+    apiKey: "AIzaSyCi_LuHHxYZWEju23ejbm4rb5NAp_qUjbM",
+    authDomain: "variedades-jared.firebaseapp.com",
+    projectId: "variedades-jared"
+  },
+  coleccion: "jared",
+  documento: "datos",
+  campoInv: "inv",
+  campoLog: "log",
+  STOCK_BAJO: 3
+};
+
+/* ===================== Estado ===================== */
+let INV = [];
+let LOG = [];
+const filtros = { stock:{q:"",cat:"",eq:"",anio:"",estado:""},
+                  ventas:{periodo:"mes",desde:"",hasta:"",eq:"",tipo:""},
+                  top:{periodo:"todo"} };
+
+/* ===================== Utilidades ===================== */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function has(x){return x!=null && String(x).trim()!=="";}
+function num(x){const n=Number(x);return isNaN(n)?0:n;}
+function pf(o,...ks){if(!o)return"";for(const k of ks){if(o[k]!=null&&String(o[k]).trim()!=="")return o[k];}return"";}
+
+/* fecha robusta: ISO, epoch, Timestamp Firestore, dd/mm/aaaa hh:mm */
+function parseFecha(v){
+  if(!v) return null;
+  if(typeof v==="object"){
+    if(typeof v.toDate==="function"){try{return v.toDate();}catch(e){}}
+    if("seconds" in v) return new Date(v.seconds*1000);
+  }
+  if(typeof v==="number") return new Date(v<1e12?v*1000:v);
+  if(typeof v==="string"){
+    let d=new Date(v); if(!isNaN(d)) return d;
+    const m=v.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:[ ,T]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+    if(m){let[,dd,mm,yy,hh,mi,ss]=m; yy=yy.length===2?"20"+yy:yy;
+      return new Date(+yy,+mm-1,+dd,+(hh||0),+(mi||0),+(ss||0));}
+  }
+  return null;
+}
+function fmtFecha(d){
+  if(!d) return "—";
+  return d.toLocaleString("es",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+
+/* getters de la bitácora (defensivos: nombres de campo desconocidos) */
+function logTipo(e){return String(pf(e,"tipo","movimiento","tipoMovimiento","accion","type")).trim();}
+function logFecha(e){return parseFecha(pf(e,"fecha","fechaHora","hora","timestamp","date","f"));}
+function logCant(e){return num(pf(e,"cantidad","cant","qty","unidades","c"));}
+function logTalla(e){return pf(e,"tal","talla","size");}
+function logProdNorm(e){
+  const p = e.producto||e.prod||e.item||e.p||e;
+  const ex = p.extras||e.extras||{};
+  return {
+    eq: pf(p,"eq","equipo")||pf(e,"eq","equipo"),
+    dor: pf(p,"dor","dorsal")||pf(e,"dor","dorsal"),
+    col: pf(p,"col","color")||pf(e,"col","color"),
+    ver: pf(p,"ver","version","versión")||pf(e,"ver","version","versión"),
+    "año": pf(p,"año","ano","anio")||pf(e,"año","ano","anio"),
+    extras: Object.keys(ex).length?ex:{Estilo:pf(p,"Estilo","estilo")||pf(e,"Estilo","estilo"),
+      "Categoría":pf(p,"Categoría","Categoria","categoria")||pf(e,"Categoría","Categoria","categoria")}
+  };
+}
+function tipoClase(t){
+  const s=(t||"").toLowerCase();
+  if(s.includes("venta"))return"venta";
+  if(s.includes("ingreso")||s.includes("entrada"))return"ingreso";
+  if(s.includes("correc"))return"correccion";
+  if(s.includes("devol"))return"devolucion";
+  return"otro";
+}
+
+/* descriptores completos del producto (regla: nunca abreviar) */
+function prodCampos(it){
+  const c=[]; const ex=it.extras||{};
+  if(has(it.eq)) c.push(["Equipo",it.eq]);
+  if(has(it.dor)) c.push(["Dorsal",it.dor]);
+  if(has(it.col)) c.push(["Color",it.col]);
+  if(has(it.ver)) c.push(["Versión",it.ver]);
+  const est=pf(ex,"Estilo","estilo"); if(has(est)) c.push(["Estilo",est]);
+  const cat=pf(ex,"Categoría","Categoria","categoria"); if(has(cat)) c.push(["Categoría",cat]);
+  const anio=pf(it,"año","ano","anio"); if(has(anio)) c.push(["Año",anio]);
+  Object.keys(ex).forEach(k=>{
+    if(["Estilo","estilo","Categoría","Categoria","categoria"].includes(k))return;
+    if(has(ex[k])) c.push([k,ex[k]]);
+  });
+  return c;
+}
+function prodCellHTML(it){
+  const c=prodCampos(it);
+  if(!c.length) return '<span class="prod"><span class="p1">Producto sin datos</span></span>';
+  const titulo=[it.eq,it.dor?("#"+it.dor):"",it.col].filter(has).join(" · ")||c[0][1];
+  const tags=c.map(([l,v])=>`<span class="tag">${esc(l)}: <b>${esc(v)}</b></span>`).join("");
+  return `<span class="prod"><span class="p1">${esc(titulo)}</span><span class="p2">${tags}</span></span>`;
+}
+
+/* clave de modelo (sin talla) para agrupar */
+function modeloKey(it){
+  const ex=it.extras||{};
+  return [it.eq,it.dor,it.col,it.ver,pf(it,"año","ano","anio"),
+    pf(ex,"Estilo","estilo"),pf(ex,"Categoría","Categoria","categoria")]
+    .map(x=>String(x==null?"":x)).join("||");
+}
+function agrupar(items){
+  const map=new Map();
+  items.forEach(it=>{
+    const k=modeloKey(it);
+    if(!map.has(k)) map.set(k,{ref:it,tallas:[],total:0});
+    const g=map.get(k); const s=num(it.stk);
+    g.tallas.push({tal:has(it.tal)?it.tal:"—",stk:s}); g.total+=s;
+  });
+  return [...map.values()];
+}
+function estadoDe(total){return total<=0?"zero":total<CONFIG.STOCK_BAJO?"low":"ok";}
+function estadoTxt(e){return e==="zero"?"Agotado":e==="low"?"Stock bajo":"Disponible";}
+
+/* opciones únicas para selects */
+function opciones(sel,valores,etiqueta){
+  const cur=sel.value;
+  const uniq=[...new Set(valores.filter(has).map(String))].sort((a,b)=>a.localeCompare(b,"es",{numeric:true}));
+  sel.innerHTML=`<option value="">${etiqueta}</option>`+uniq.map(v=>`<option>${esc(v)}</option>`).join("");
+  if(uniq.includes(cur)) sel.value=cur;
+}
+
+/* ===================== Render: RESUMEN ===================== */
+function renderResumen(){
+  const grupos=agrupar(INV);
+  const totalUnidades=INV.reduce((a,it)=>a+num(it.stk),0);
+  const agotados=grupos.filter(g=>g.total<=0).length;
+  const ahora=new Date(); const mesIni=new Date(ahora.getFullYear(),ahora.getMonth(),1);
+  const ventasMes=LOG.filter(e=>tipoClase(logTipo(e))==="venta").filter(e=>{const f=logFecha(e);return f&&f>=mesIni;})
+    .reduce((a,e)=>a+logCant(e),0);
+
+  document.getElementById("kpis").innerHTML=[
+    {l:"Productos (modelos)",v:grupos.length,h:`${INV.length} variantes de talla`,c:""},
+    {l:"Unidades en stock",v:totalUnidades.toLocaleString("es"),h:"Suma de todas las tallas",c:"indigo"},
+    {l:"Vendidas este mes",v:ventasMes.toLocaleString("es"),h:"Unidades según bitácora",c:""},
+    {l:"Agotados",v:agotados,h:"Modelos en 0 unidades",c:"danger"}
+  ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val tnum">${k.v}</div><div class="hint">${k.h}</div></div>`).join("");
+
+  // movimientos recientes
+  const recientes=[...LOG].map(e=>({e,f:logFecha(e)})).sort((a,b)=>(b.f?+b.f:0)-(a.f?+a.f:0)).slice(0,8);
+  const rc=document.getElementById("recientes");
+  if(!recientes.length){rc.innerHTML='<div class="empty">Sin movimientos registrados.</div>';}
+  else{
+    rc.innerHTML='<div class="table-wrap"><table><thead><tr><th>Fecha</th><th class="c">Tipo</th><th>Producto</th><th class="r">Cant.</th></tr></thead><tbody>'+
+      recientes.map(({e,f})=>{const t=logTipo(e),cl=tipoClase(t);
+        return `<tr><td class="tnum">${esc(fmtFecha(f))}</td><td class="c"><span class="badge ${cl}">${esc(t||"—")}</span></td><td>${prodCellHTML(logProdNorm(e))}</td><td class="r tnum">${logCant(e)}</td></tr>`;
+      }).join("")+'</tbody></table></div>';
+  }
+
+  // alerta: solo productos en 0 (desplegable)
+  document.getElementById("atencion").innerHTML=agotadosFoldHTML(grupos,true);
+}
+
+/* bloque desplegable de productos agotados (reutilizable) */
+function agotadosFoldHTML(grupos,colapsado){
+  const agot=grupos.filter(g=>g.total<=0)
+    .sort((a,b)=>String(a.ref.eq||"").localeCompare(String(b.ref.eq||""),"es"));
+  if(!agot.length) return '<div class="empty">No hay productos agotados. 👍</div>';
+  const filas=agot.map(g=>{
+    const tl=g.tallas.map(t=>`<span class="size zero">${esc(t.tal)} <span class="q">${t.stk}</span></span>`).join("");
+    return `<tr><td>${prodCellHTML(g.ref)}</td><td class="c"><div class="sizes">${tl}</div></td></tr>`;
+  }).join("");
+  const chev='<span class="chev"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>';
+  return `<details class="fold"${colapsado?"":" open"}><summary><span class="dotw"></span><span class="cnt">${agot.length} modelo(s) agotado(s)</span>${chev}</summary>`+
+    `<div class="table-wrap"><table><thead><tr><th>Producto</th><th class="c">Tallas</th></tr></thead><tbody>${filas}</tbody></table></div></details>`;
+}
+
+/* ===================== Render: STOCK ===================== */
+function renderStock(){
+  opciones(document.getElementById("fCategoria"),INV.map(it=>pf(it.extras||{},"Categoría","Categoria","categoria")),"Todas");
+  opciones(document.getElementById("fEquipo"),INV.map(it=>it.eq),"Todos");
+  opciones(document.getElementById("fAnio"),INV.map(it=>pf(it,"año","ano","anio")),"Todos");
+
+  const f=filtros.stock;
+  let grupos=agrupar(INV);
+  if(f.cat) grupos=grupos.filter(g=>String(pf(g.ref.extras||{},"Categoría","Categoria","categoria"))===f.cat);
+  if(f.eq) grupos=grupos.filter(g=>String(g.ref.eq||"")===f.eq);
+  if(f.anio) grupos=grupos.filter(g=>String(pf(g.ref,"año","ano","anio"))===f.anio);
+  if(f.estado) grupos=grupos.filter(g=>estadoDe(g.total)===f.estado);
+  if(f.q){const q=f.q.toLowerCase();
+    grupos=grupos.filter(g=>prodCampos(g.ref).some(([,v])=>String(v).toLowerCase().includes(q)));}
+  grupos.sort((a,b)=>String(a.ref.eq||"").localeCompare(String(b.ref.eq||""),"es"));
+
+  const unidades=grupos.reduce((a,g)=>a+g.total,0);
+  document.getElementById("stockCount").textContent=`${grupos.length} modelo(s) · ${unidades.toLocaleString("es")} unidad(es)`;
+
+  const tb=document.querySelector("#stockTable tbody");
+  if(!grupos.length){tb.innerHTML='<tr><td colspan="4"><div class="empty">No hay productos que coincidan con los filtros.</div></td></tr>';return;}
+  tb.innerHTML=grupos.map(g=>{
+    const tallas=g.tallas.slice().sort((a,b)=>String(a.tal).localeCompare(String(b.tal),"es",{numeric:true}))
+      .map(t=>{const cl=t.stk<=0?"zero":t.stk<CONFIG.STOCK_BAJO?"low":"";
+        return `<span class="size ${cl}">${esc(t.tal)} <span class="q">${t.stk}</span></span>`;}).join("");
+    const es=estadoDe(g.total);
+    return `<tr><td>${prodCellHTML(g.ref)}</td><td><div class="sizes">${tallas}</div></td><td class="r tnum"><b>${g.total}</b></td><td class="c"><span class="estado ${es}">${estadoTxt(es)}</span></td></tr>`;
+  }).join("");
+}
+
+/* ===================== Render: VENTAS ===================== */
+function rango(periodo,desde,hasta){
+  const now=new Date(); const hoy0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const finHoy=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59,999);
+  if(periodo==="hoy") return[hoy0,finHoy];
+  if(periodo==="semana"){const d=(now.getDay()+6)%7;const s=new Date(hoy0);s.setDate(s.getDate()-d);return[s,finHoy];}
+  if(periodo==="mes") return[new Date(now.getFullYear(),now.getMonth(),1),finHoy];
+  if(periodo==="rango") return[desde?new Date(desde+"T00:00:00"):null, hasta?new Date(hasta+"T23:59:59"):null];
+  return[null,null];
+}
+function filtrarLog(periodo,desde,hasta,eq,tipo){
+  const[ini,fin]=rango(periodo,desde,hasta);
+  return LOG.filter(e=>{
+    const f=logFecha(e);
+    if(ini&&(!f||f<ini))return false;
+    if(fin&&(!f||f>fin))return false;
+    if(eq&&String(logProdNorm(e).eq||"")!==eq)return false;
+    if(tipo&&logTipo(e)!==tipo)return false;
+    return true;
+  });
+}
+function renderVentas(){
+  opciones(document.getElementById("vEquipo"),LOG.map(e=>logProdNorm(e).eq).concat(INV.map(it=>it.eq)),"Todos");
+  opciones(document.getElementById("vTipo"),LOG.map(e=>logTipo(e)),"Todos");
+
+  const f=filtros.ventas;
+  const rows=filtrarLog(f.periodo,f.desde,f.hasta,f.eq,f.tipo)
+    .map(e=>({e,f:logFecha(e)})).sort((a,b)=>(b.f?+b.f:0)-(a.f?+a.f:0));
+
+  // resumen
+  let nVent=0,uVent=0,nIng=0,nDev=0;
+  rows.forEach(({e})=>{const cl=tipoClase(logTipo(e));
+    if(cl==="venta"){nVent++;uVent+=logCant(e);} else if(cl==="ingreso")nIng++; else if(cl==="devolucion")nDev++;});
+  document.getElementById("vSummary").innerHTML=[
+    ["Movimientos",rows.length],["Ventas",nVent],["Unidades vendidas",uVent],["Ingresos",nIng],["Devoluciones",nDev]
+  ].map(([l,v])=>`<div class="schip"><div class="l">${l}</div><div class="v tnum">${v.toLocaleString("es")}</div></div>`).join("");
+
+  const tb=document.querySelector("#ventasTable tbody");
+  if(!rows.length){tb.innerHTML='<tr><td colspan="5"><div class="empty">No hay movimientos para los filtros seleccionados.</div></td></tr>';}
+  else{
+    tb.innerHTML=rows.map(({e,f})=>{const t=logTipo(e),cl=tipoClase(t);
+      return `<tr><td class="tnum">${esc(fmtFecha(f))}</td><td class="c"><span class="badge ${cl}">${esc(t||"—")}</span></td><td>${prodCellHTML(logProdNorm(e))}</td><td class="c">${esc(logTalla(e)||"—")}</td><td class="r tnum">${logCant(e)}</td></tr>`;
+    }).join("");
+  }
+
+  // diagnóstico de nombres de campo
+  const diag={inv_ejemplo:INV[0]?Object.keys(INV[0]):[],
+              log_ejemplo:LOG[0]?Object.keys(LOG[0]):[],
+              log_primer_registro:LOG[0]||null};
+  document.getElementById("diagPre").textContent=JSON.stringify(diag,null,2);
+}
+
+/* ===================== Render: TOP Y ALERTAS ===================== */
+function renderAlertas(){
+  // top vendidos según periodo
+  const tp=filtros.top.periodo;
+  const ventas=filtrarLog(tp,"","","","" ).filter(e=>tipoClase(logTipo(e))==="venta");
+  const map=new Map();
+  ventas.forEach(e=>{const p=logProdNorm(e);const k=modeloKey(p);
+    if(!map.has(k))map.set(k,{ref:p,u:0});map.get(k).u+=logCant(e);});
+  const top=[...map.values()].sort((a,b)=>b.u-a.u).slice(0,15);
+  const tt=document.querySelector("#topTable tbody");
+  if(!top.length){tt.innerHTML='<tr><td colspan="3"><div class="empty">Sin ventas registradas en el periodo.</div></td></tr>';}
+  else{tt.innerHTML=top.map((g,i)=>`<tr><td class="c"><span class="rank ${i<3?"top":""}">${i+1}</span></td><td>${prodCellHTML(g.ref)}</td><td class="r tnum"><b>${g.u}</b></td></tr>`).join("");}
+
+  const grupos=agrupar(INV);
+  // solo agotados (los modelos con 1-2 unidades ya no se consideran alerta)
+  document.getElementById("agotadoBox").innerHTML=agotadosFoldHTML(grupos,false);
+}
+
+/* ===================== Render maestro ===================== */
+function renderAll(){
+  try{renderResumen();renderStock();renderVentas();renderAlertas();}
+  catch(err){console.error("Error al renderizar:",err);}
+}
+
+/* ===================== Firebase ===================== */
+function setLive(state,text){
+  const b=document.getElementById("liveBadge");
+  b.className="live"+(state==="on"?" on":state==="err"?" err":"");
+  document.getElementById("liveText").textContent=text;
+}
+function initFirebase(){
+  try{
+    firebase.initializeApp(CONFIG.firebase);
+    const db=firebase.firestore();
+    setLive("","Conectando…");
+    db.collection(CONFIG.coleccion).doc(CONFIG.documento).onSnapshot(snap=>{
+      const data=snap.data()||{};
+      INV=Array.isArray(data[CONFIG.campoInv])?data[CONFIG.campoInv]:[];
+      LOG=Array.isArray(data[CONFIG.campoLog])?data[CONFIG.campoLog]:[];
+      setLive("on","En vivo · "+new Date().toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"}));
+      renderAll();
+    },err=>{
+      console.error(err);
+      setLive("err","Error de conexión");
+    });
+  }catch(e){
+    console.error(e);
+    setLive("err","Error al iniciar Firebase");
+  }
+}
+
+/* ===================== Login / tema / tabs ===================== */
+function showApp(){document.getElementById("login").style.display="none";document.getElementById("app").hidden=false;}
+function intentarLogin(){
+  const v=document.getElementById("pw").value;
+  if(v===CONFIG.PASSWORD){
+    try{sessionStorage.setItem("vj_ok","1");}catch(e){}
+    showApp(); initFirebase();
+  }else{
+    document.getElementById("loginErr").textContent="Contraseña incorrecta.";
+    document.getElementById("pw").value="";
+  }
+}
+document.getElementById("loginBtn").addEventListener("click",intentarLogin);
+document.getElementById("pw").addEventListener("keydown",e=>{if(e.key==="Enter")intentarLogin();});
+document.getElementById("logoutBtn").addEventListener("click",()=>{try{sessionStorage.removeItem("vj_ok");}catch(e){}location.reload();});
+
+document.getElementById("themeBtn").addEventListener("click",()=>{
+  document.body.classList.toggle("light");
+  try{localStorage.setItem("vj_theme",document.body.classList.contains("light")?"light":"dark");}catch(e){}
+});
+(function(){try{if(localStorage.getItem("vj_theme")==="light")document.body.classList.add("light");}catch(e){}})();
+
+document.querySelectorAll("nav.tabs button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  document.querySelectorAll(".tab").forEach(s=>s.hidden=true);
+  document.getElementById("tab-"+b.dataset.tab).hidden=false;
+}));
+
+/* filtros stock */
+document.getElementById("fBuscar").addEventListener("input",e=>{filtros.stock.q=e.target.value;renderStock();});
+document.getElementById("fCategoria").addEventListener("change",e=>{filtros.stock.cat=e.target.value;renderStock();});
+document.getElementById("fEquipo").addEventListener("change",e=>{filtros.stock.eq=e.target.value;renderStock();});
+document.getElementById("fAnio").addEventListener("change",e=>{filtros.stock.anio=e.target.value;renderStock();});
+document.getElementById("fEstado").addEventListener("change",e=>{filtros.stock.estado=e.target.value;renderStock();});
+document.getElementById("fLimpiar").addEventListener("click",()=>{
+  filtros.stock={q:"",cat:"",eq:"",anio:"",estado:""};
+  ["fBuscar","fCategoria","fEquipo","fAnio","fEstado"].forEach(id=>document.getElementById(id).value="");
+  renderStock();
+});
+
+/* filtros ventas */
+document.querySelectorAll("#vPeriodo button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#vPeriodo button").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); filtros.ventas.periodo=b.dataset.p;
+  const rango=b.dataset.p==="rango";
+  document.getElementById("vDesdeWrap").hidden=!rango;
+  document.getElementById("vHastaWrap").hidden=!rango;
+  renderVentas();
+}));
+document.getElementById("vDesde").addEventListener("change",e=>{filtros.ventas.desde=e.target.value;renderVentas();});
+document.getElementById("vHasta").addEventListener("change",e=>{filtros.ventas.hasta=e.target.value;renderVentas();});
+document.getElementById("vEquipo").addEventListener("change",e=>{filtros.ventas.eq=e.target.value;renderVentas();});
+document.getElementById("vTipo").addEventListener("change",e=>{filtros.ventas.tipo=e.target.value;renderVentas();});
+
+/* periodo top */
+document.querySelectorAll("#tPeriodo button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#tPeriodo button").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); filtros.top.periodo=b.dataset.p; renderAlertas();
+}));
+
+/* sesión recordada */
+(function(){try{if(sessionStorage.getItem("vj_ok")==="1"){showApp();initFirebase();}}catch(e){}})();
+</script>
+</body>
+</html>
