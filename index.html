@@ -111,8 +111,10 @@ td.c,th.c{text-align:center}
 .sizes{display:flex;flex-wrap:wrap;gap:6px}
 .size{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px;border-radius:8px;
   background:var(--good-soft);font-weight:600}
-.size.zero{background:var(--danger-soft);opacity:.85}
-.size.low{background:var(--warn-soft)}
+.size.zero{background:rgba(127,29,29,.65);color:#fca5a5;border:none}
+.size.low{background:rgba(180,83,9,.55);color:#fcd34d;border:none}
+body.light .size.zero{background:rgba(220,38,38,.14);color:#b91c1c}
+body.light .size.low{background:rgba(245,158,11,.20);color:#b45309}
 .size .q{font-variant-numeric:tabular-nums}
 
 .badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
