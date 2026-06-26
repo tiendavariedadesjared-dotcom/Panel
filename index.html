@@ -329,10 +329,28 @@ function coincidePeriodo(fechaStr){
   if(ini&&f<ini)return false;if(fin&&f>fin)return false;return true;
 }
 
+/* orden de tallas: S M L XL 2XL 3XL 4XL ... luego numéricas (16,18..) ... luego #5.. */
+const TALLA_ORDEN=["XS","S","M","L","XL","2XL","3XL","4XL","5XL","6XL"];
+function tallaRank(t){
+  const s=String(t==null?"":t).trim().toUpperCase().replace(/\s+/g,"");
+  let norm=s;const xm=s.match(/^(X+)L$/);
+  if(xm){const n=xm[1].length;norm=n===1?"XL":(n+"XL");}
+  const idx=TALLA_ORDEN.indexOf(norm);
+  if(idx>=0)return[0,idx];
+  if(/^\d+$/.test(s))return[1,parseInt(s,10)];
+  const h=s.match(/^#\s*(\d+)/);if(h)return[2,parseInt(h[1],10)];
+  return[3,0];
+}
+function compararTallas(a,b){
+  const ra=tallaRank(a),rb=tallaRank(b);
+  if(ra[0]!==rb[0])return ra[0]-rb[0];
+  if(ra[1]!==rb[1])return ra[1]-rb[1];
+  return String(a).localeCompare(String(b),"es",{numeric:true});
+}
 /* opciones de selects */
-function llenarSelect(id,valores,etiqueta){
+function llenarSelect(id,valores,etiqueta,cmp){
   const sel=document.getElementById(id);const cur=sel.value;
-  const uniq=[...new Set(valores.filter(has).map(String))].sort((a,b)=>a.localeCompare(b,"es",{numeric:true}));
+  const uniq=[...new Set(valores.filter(has).map(String))].sort(cmp||((a,b)=>a.localeCompare(b,"es",{numeric:true})));
   sel.innerHTML=`<option value="">${etiqueta}</option>`+uniq.map(v=>`<option>${esc(v)}</option>`).join("");
   if(uniq.includes(cur))sel.value=cur;
 }
@@ -341,7 +359,7 @@ function llenarFiltros(){
   llenarSelect("fDorsal",INV.map(x=>x.dor),"Todos");
   llenarSelect("fColor",INV.map(x=>x.col),"Todos");
   llenarSelect("fVersion",INV.map(x=>x.ver),"Todas");
-  llenarSelect("fTalla",INV.map(x=>x.tal),"Todas");
+  llenarSelect("fTalla",INV.map(x=>x.tal),"Todas",compararTallas);
   llenarSelect("fCategoria",INV.map(x=>pf(x.extras||{},"Categoría","Categoria","categoria")),"Todas");
   llenarSelect("fAnio",INV.map(x=>pf(x,"año","ano","anio")),"Todos");
 }
@@ -357,7 +375,7 @@ function renderStock(){
   const tb=document.querySelector("#tStock tbody");
   if(!grupos.length){tb.innerHTML='<tr><td colspan="3"><div class="empty">No hay productos con estos filtros.</div></td></tr>';return;}
   tb.innerHTML=grupos.map(g=>{
-    const tallas=g.tallas.slice().sort((a,b)=>String(a.tal).localeCompare(String(b.tal),"es",{numeric:true}))
+    const tallas=g.tallas.slice().sort((a,b)=>compararTallas(a.tal,b.tal))
       .map(t=>`<span class="size ${t.stk<=0?"zero":""}">${esc(t.tal)} <span class="q">${t.stk}</span></span>`).join("");
     return `<tr><td>${prodCell(g.ref)}</td><td><div class="sizes">${tallas}</div></td><td class="r tnum"><b>${g.total}</b></td></tr>`;
   }).join("");
