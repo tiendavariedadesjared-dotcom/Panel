@@ -124,6 +124,7 @@ body.light .size.low{background:rgba(245,158,11,.20);color:#b45309}
 
 .hint-card{background:var(--surface);border:1px dashed var(--border-2);border-radius:var(--radius);
   padding:24px;text-align:center}
+.subhead{font-family:"Sora";font-weight:700;font-size:14px;margin:20px 0 10px;color:var(--muted)}
 .hint-card h3{margin:0 0 8px;font-size:16px;font-family:"Sora"}
 .hint-card p{margin:6px auto;max-width:560px;font-size:13.5px;color:var(--muted);line-height:1.6}
 .flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -168,6 +169,7 @@ footer{max-width:1200px;margin:0 auto;padding:10px 18px 28px;color:var(--faint);
   <button data-tab="ventas">Ventas</button>
   <button data-tab="ingresos">Ingresos</button>
   <button data-tab="cambios">Cambios y devoluciones</button>
+  <button data-tab="consig">Consignación</button>
 </nav>
 
 <main>
@@ -203,6 +205,9 @@ footer{max-width:1200px;margin:0 auto;padding:10px 18px 28px;color:var(--faint);
   <section class="tab" id="tab-cambios" hidden>
     <div class="table-wrap"><table id="tCambios"><thead><tr><th>Fecha</th><th class="c">Tipo</th><th>Detalle</th></tr></thead><tbody></tbody></table></div>
   </section>
+  <section class="tab" id="tab-consig" hidden>
+    <div id="consigBox"></div>
+  </section>
 </main>
 <footer>Variedades Jared · Visualización en tiempo real · Los datos no se modifican desde aquí.</footer>
 
@@ -215,7 +220,7 @@ const CONFIG={
   firebase:{apiKey:"AIzaSyCi_LuHHxYZWEju23ejbm4rb5NAp_qUjbM",authDomain:"variedades-jared.firebaseapp.com",projectId:"variedades-jared"},
   coleccion:"jared", documento:"datos"
 };
-let INV=[],SAL=[],CAMB=[],BIT=[];
+let INV=[],SAL=[],CAMB=[],BIT=[],CONS=[];
 let _invById=new Map(),_invByModel=new Map();
 let tabActiva="stock";
 const F={q:"",periodo:"todo",eq:"",dor:"",col:"",ver:"",tal:"",cat:"",anio:"",estado:""};
@@ -420,6 +425,7 @@ function renderIngresos(){
     return;
   }
   const rows=BIT.filter(e=>{const t=String(e.tipo||"").toLowerCase();return t.includes("mod_suma")||t==="ingreso";})
+    .filter(e=>!/liquidac/i.test(e.desc||""))
     .filter(e=>coincideTextoStr(e.desc)&&coincidePeriodo(e.fechaISO||e.fecha))
     .map(e=>({e,f:parseFecha(e.fechaISO||e.fecha)})).sort((a,b)=>(b.f?+b.f:0)-(a.f?+a.f:0));
   setCount(`<b>${rows.length}</b> ingreso(s) de stock`);
@@ -460,6 +466,61 @@ function renderCambios(){
   }).join("");
 }
 
+/* ---------- render: CONSIGNACIÓN ---------- */
+function renderConsig(){
+  const box=document.getElementById("consigBox");
+  if(!CONS.length){
+    setCount("");
+    box.innerHTML=`<div class="hint-card">
+      <h3>La consignación aún no está disponible</h3>
+      <p>Tu app ya registra la consignación, pero todavía no la sincroniza con Firebase, así que el panel no puede verla.</p>
+      <p>Para activarla, agregá una línea en tu app (sincronizar el campo de consignación). En cuanto lo hagas, esta sección se llena sola.</p>
+    </div>`;
+    return;
+  }
+  const cons=CONS.filter(c=>coincidePeriodo(c.fecha));
+  const esActiva=c=>String(c.estado||"").toLowerCase()==="activa";
+
+  // pendientes (productos que alguien tiene ahora)
+  const pend=[];
+  cons.filter(esActiva).forEach(c=>{
+    (c.items||[]).forEach(it=>{
+      const rest=num(it.qty)-num(it.vendido)-num(it.devuelto);
+      if(rest<=0)return;
+      if(!coincideVariantes(it)||!coincideTexto(it))return;
+      pend.push({c,it,rest,f:parseFecha(c.fecha)});
+    });
+  });
+  pend.sort((a,b)=>(b.f?+b.f:0)-(a.f?+a.f:0));
+  const totalPend=pend.reduce((a,p)=>a+p.rest,0);
+  const personas=new Set(pend.map(p=>p.c.quien)).size;
+  setCount(`<b>${pend.length}</b> producto(s) en consignación · <b>${totalPend}</b> unidad(es) · <b>${personas}</b> persona(s)`);
+
+  let html="";
+  html+='<div class="table-wrap"><table><thead><tr><th>Persona</th><th>Fecha</th><th>Producto</th><th class="r">Pendiente</th></tr></thead><tbody>';
+  if(pend.length){
+    html+=pend.map(p=>`<tr><td><b>${esc(p.c.quien||"—")}</b></td><td class="tnum">${esc(fmtFecha(p.f))}</td><td>${prodCell(p.it,true)}</td><td class="r tnum"><b>${p.rest}</b></td></tr>`).join("");
+  }else{
+    html+='<tr><td colspan="4"><div class="empty">No hay productos en consignación con estos filtros.</div></td></tr>';
+  }
+  html+='</tbody></table></div>';
+
+  // historial de liquidadas
+  const liq=cons.filter(c=>!esActiva(c))
+    .filter(c=>(c.items||[]).some(it=>coincideVariantes(it)&&coincideTexto(it)))
+    .map(c=>({c,f:parseFecha(c.fechaLiq||c.fecha)})).sort((a,b)=>(b.f?+b.f:0)-(a.f?+a.f:0));
+  if(liq.length){
+    html+='<div class="subhead">Liquidadas</div>';
+    html+='<div class="table-wrap"><table><thead><tr><th>Persona</th><th>Enviada</th><th>Liquidada</th><th class="r">Vendido</th><th class="r">Devuelto</th></tr></thead><tbody>';
+    html+=liq.map(({c})=>{
+      let v=0,d=0;(c.items||[]).forEach(it=>{v+=num(it.vendido);d+=num(it.devuelto);});
+      return `<tr><td><b>${esc(c.quien||"—")}</b></td><td class="tnum">${esc(fmtFecha(parseFecha(c.fecha)))}</td><td class="tnum">${esc(fmtFecha(parseFecha(c.fechaLiq)))}</td><td class="r tnum qpos">${v}</td><td class="r tnum">${d}</td></tr>`;
+    }).join("");
+    html+='</tbody></table></div>';
+  }
+  box.innerHTML=html;
+}
+
 /* ---------- orquestación ---------- */
 function setCount(t){document.getElementById("countNote").innerHTML=t;}
 function renderActiva(){
@@ -469,6 +530,7 @@ function renderActiva(){
   else if(tabActiva==="ventas")renderVentas();
   else if(tabActiva==="ingresos")renderIngresos();
   else if(tabActiva==="cambios")renderCambios();
+  else if(tabActiva==="consig")renderConsig();
 }
 function indexarInv(){
   _invById=new Map();_invByModel=new Map();
@@ -491,7 +553,7 @@ function initFirebase(){
     const db=firebase.firestore();
     db.collection(CONFIG.coleccion).doc(CONFIG.documento).onSnapshot(snap=>{
       const d=snap.data()||{};
-      INV=asArray(d.inv); SAL=asArray(d.sal); CAMB=asArray(d.camb); BIT=asArray(d.bit);
+      INV=asArray(d.inv); SAL=asArray(d.sal); CAMB=asArray(d.camb); BIT=asArray(d.bit); CONS=asArray(d.cons);
       setLive("on","En vivo · "+new Date().toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"}));
       renderTodo();
     },err=>{console.error(err);setLive("err","Error de conexión");});
