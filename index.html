@@ -112,6 +112,7 @@ td.c,th.c{text-align:center}
 .size{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px;border-radius:8px;
   background:var(--good-soft);font-weight:600}
 .size.zero{background:var(--danger-soft);opacity:.85}
+.size.low{background:var(--warn-soft)}
 .size .q{font-variant-numeric:tabular-nums}
 
 .badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
@@ -181,7 +182,7 @@ footer{max-width:1200px;margin:0 auto;padding:10px 18px 28px;color:var(--faint);
     <div class="field"><label>Categoría</label><select id="fCategoria"></select></div>
     <div class="field"><label>Año</label><select id="fAnio"></select></div>
     <div class="field" id="wrapEstado"><label>Estado</label><select id="fEstado">
-      <option value="">Todos</option><option value="disp">Disponibles</option><option value="agot">Agotados</option>
+      <option value="">Todos</option><option value="disp">Disponibles</option><option value="agot">Con talla agotada</option><option value="bajo">Con 1 unidad</option>
     </select></div>
     <button class="btn-ghost" id="fLimpiar">Limpiar</button>
   </div>
@@ -374,7 +375,8 @@ function renderStock(){
   items.forEach(it=>{const k=modeloKey(it);if(!map.has(k))map.set(k,{ref:it,tallas:[],total:0});
     const g=map.get(k);const s=num(it.stk);g.tallas.push({tal:has(it.tal)?it.tal:"—",stk:s});g.total+=s;});
   let grupos=[...map.values()];
-  if(F.estado==="agot")grupos=grupos.filter(g=>g.total<=0);
+  if(F.estado==="agot")grupos=grupos.filter(g=>g.tallas.some(t=>t.stk<=0));
+  else if(F.estado==="bajo")grupos=grupos.filter(g=>g.tallas.some(t=>t.stk===1));
   else if(F.estado==="disp")grupos=grupos.filter(g=>g.total>0);
   grupos.sort((a,b)=>String(a.ref.eq||"").localeCompare(String(b.ref.eq||""),"es"));
   setCount(`<b>${grupos.length}</b> modelo(s) · <b>${grupos.reduce((a,g)=>a+g.total,0).toLocaleString("es")}</b> unidad(es)`);
@@ -382,7 +384,7 @@ function renderStock(){
   if(!grupos.length){tb.innerHTML='<tr><td colspan="3"><div class="empty">No hay productos con estos filtros.</div></td></tr>';return;}
   tb.innerHTML=grupos.map(g=>{
     const tallas=g.tallas.slice().sort((a,b)=>compararTallas(a.tal,b.tal))
-      .map(t=>`<span class="size ${t.stk<=0?"zero":""}">${esc(t.tal)} <span class="q">${t.stk}</span></span>`).join("");
+      .map(t=>{const cl=t.stk<=0?"zero":(t.stk===1?"low":"");return `<span class="size ${cl}">${esc(t.tal)} <span class="q">${t.stk}</span></span>`;}).join("");
     return `<tr><td>${prodCell(g.ref)}</td><td><div class="sizes">${tallas}</div></td><td class="r tnum"><b>${g.total}</b></td></tr>`;
   }).join("");
 }
